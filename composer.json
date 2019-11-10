@@ -1,0 +1,33 @@
+{
+    "name": "devorto/queue",
+    "description": "Simple queue implementation. Load / Run queue commands (with custom storage support).",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Devorto",
+            "email": "info@devorto.com",
+            "homepage": "https://www.devorto.com/",
+            "role": "Owner"
+        },
+        {
+            "name": "Geoffrey Dijkstra",
+            "email": "geoffrey@devorto.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.1.0",
+        "devorto/key-value-storage": "^1.0.0"
+    },
+    "suggest": {
+        "symfony/console": "To allow easy support of running the command queue (see src/Commands/Run).",
+        "devorto/dependency-injection": "To allow easy support of running the command queue (see src/Commands/Run).",
+        "psr/log": "To allow easy support of running the command queue (see src/Commands/Run)."
+    },
+    "autoload": {
+        "psr-4": {
+            "Devorto\\Queue\\": "src"
+        }
+    }
+}
