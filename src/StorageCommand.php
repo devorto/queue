@@ -63,7 +63,7 @@ class StorageCommand
             if (empty($runAfter)) {
                 $this->runAfter = new DateTime('now', new DateTimeZone('UTC'));
             } else {
-                $runAfter->setTimezone(new DateTimeZone('UTC'));
+                $this->runAfter = $runAfter->setTimezone(new DateTimeZone('UTC'));
             }
         } catch (Exception $exception) {
             throw new RuntimeException('Could not create new DateTime object.', 0, $exception);
