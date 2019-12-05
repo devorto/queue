@@ -18,16 +18,20 @@
     ],
     "require": {
         "php": "^7.1.0",
-        "devorto/key-value-storage": "^1.0.0"
+        "symfony/console": "^4.4.0",
+        "psr/log": "^1.1.0"
     },
     "suggest": {
-        "symfony/console": "To allow easy support of running the command queue (see src/Commands/Run).",
-        "devorto/dependency-injection": "To allow easy support of running the command queue (see src/Commands/Run).",
-        "psr/log": "To allow easy support of running the command queue (see src/Commands/Run)."
+        "devorto/dependency-injection": "For loading of symfony console command dependencies."
     },
     "autoload": {
         "psr-4": {
             "Devorto\\Queue\\": "src"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "7.1.3"
         }
     }
 }

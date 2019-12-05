@@ -4,10 +4,10 @@ namespace Devorto\Queue;
 
 use DateTime;
 use DateTimeZone;
-use Devorto\KeyValueStorage\KeyValueStorage;
 use Exception;
 use InvalidArgumentException;
 use RuntimeException;
+use Symfony\Component\Console\Input\ArrayInput;
 
 /**
  * Class StorageCommand
@@ -28,7 +28,7 @@ class StorageCommand
     protected $command;
 
     /**
-     * @var KeyValueStorage
+     * @var ArrayInput|null
      */
     protected $parameters;
 
@@ -47,17 +47,17 @@ class StorageCommand
      *
      * @param string $command The actual command (implementing Command interface) you want to run.
      * (Recommended way of using this is passing the class as string like Command::class).
-     * @param KeyValueStorage|null $parameters Extra parameters you want to pass along when the command is run.
+     * @param ArrayInput|null $parameters Extra parameters you want to pass along when the command is run.
      * @param DateTime|null $runAfter If left empty current date en time is used.
      * (Note: uses UTC internally, will be converted if provided.).
      */
     public function __construct(
         string $command,
-        KeyValueStorage $parameters = null,
+        ArrayInput $parameters = null,
         DateTime $runAfter = null
     ) {
         $this->command = $command;
-        $this->parameters = $parameters ?? new KeyValueStorage();
+        $this->parameters = $parameters;
         try {
             $this->created = new DateTime('now', new DateTimeZone('UTC'));
             if (empty($runAfter)) {
@@ -81,34 +81,48 @@ class StorageCommand
     {
         $properties = ['id', 'command', 'parameters', 'created', 'runAfter'];
         array_walk($properties, function (string $property) use ($data) {
-            if (empty($data[$property])) {
-                throw new InvalidArgumentException('Undefined index: ' . $property);
-            }
-
             switch ($property) {
+                case 'id':
+                    if (empty($data['id'])) {
+                        throw new InvalidArgumentException('Data "id" can\'t be empty.');
+                    }
+                    break;
+                case 'command':
+                    if (empty($data['command'])) {
+                        throw new InvalidArgumentException('Data "command" can\'t ben empty.');
+                    }
+                    break;
                 case 'parameters':
-                    if (!($data['parameters'] instanceof KeyValueStorage)) {
+                    if (!empty($data['parameters']) && !($data['parameters'] instanceof ArrayInput)) {
                         throw new InvalidArgumentException(
-                            'Index "parameters" should be an instanceof: ' . KeyValueStorage::class
+                            'Data "parameters" should be an instanceof: ' . ArrayInput::class
                         );
                     }
                     break;
                 case 'created':
                     if (!($data['created'] instanceof DateTime)) {
                         throw new InvalidArgumentException(
-                            'Index "created" should be an instanceof: ' . DateTime::class
+                            'Data "created" should be an instanceof: ' . DateTime::class
                         );
                     }
                     break;
                 case 'runAfter':
-                    if (!($data['runAfter'] instanceof DateTime)) {
+                    if (!empty($data['runAfter']) && !($data['runAfter'] instanceof DateTime)) {
                         throw new InvalidArgumentException(
-                            'Index "runAfter" should be an instanceof: ' . DateTime::class
+                            'Data "runAfter" should be an instanceof: ' . DateTime::class
                         );
                     }
                     break;
             }
         });
+
+        if (empty($data['parameters'])) {
+            $data['parameters'] = null;
+        }
+
+        if (empty($data['runAfter'])) {
+            $data['runAfter'] = null;
+        }
 
         $storageCommand = new static($data['command'], $data['parameters'], $data['runAfter']);
         $storageCommand->id = $data['id'];
@@ -134,9 +148,9 @@ class StorageCommand
     }
 
     /**
-     * @return KeyValueStorage
+     * @return ArrayInput|null
      */
-    public function getParameters(): KeyValueStorage
+    public function getParameters(): ?ArrayInput
     {
         return $this->parameters;
     }

@@ -4,15 +4,14 @@ namespace Devorto\Queue\Commands;
 
 use DateTime;
 use DateTimeZone;
-use Devorto\DependencyInjection\DependencyInjection;
-use Devorto\Queue\Command as QueueCommand;
 use Devorto\Queue\Storage;
 use Exception;
-use LogicException;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
@@ -34,17 +33,27 @@ class Run extends Command
     protected $logger;
 
     /**
+     * @var bool
+     */
+    protected $continueQueueAfterCommandException;
+
+    /**
      * Run constructor.
      *
      * @param Storage $storage
      * @param LoggerInterface $logger
+     * @param bool $continueQueueAfterCommandException
      */
-    public function __construct(Storage $storage, LoggerInterface $logger)
-    {
+    public function __construct(
+        Storage $storage,
+        LoggerInterface $logger,
+        bool $continueQueueAfterCommandException = false
+    ) {
         parent::__construct();
 
         $this->storage = $storage;
         $this->logger = $logger;
+        $this->continueQueueAfterCommandException = $continueQueueAfterCommandException;
     }
 
     /**
@@ -54,12 +63,14 @@ class Run extends Command
     {
         $this
             ->setName('queue:run')
-            ->setDescription('Run commands in queue.');
+            ->setDescription('Run symfony commands in queue.');
     }
 
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
+     *
+     * @throws Throwable
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
@@ -82,18 +93,12 @@ class Run extends Command
             $message .= 'Started at: ' . $start->format(DateTime::ISO8601) . PHP_EOL;
 
             try {
-                if (!is_subclass_of($storageCommand->getCommand(), QueueCommand::class, true)) {
-                    throw new LogicException(
-                        sprintf(
-                            'Class "%s" does not implement "%s".',
-                            $storageCommand,
-                            QueueCommand::class
-                        )
-                    );
+                $command = $this->getApplication()->find($storageCommand->getCommand());
+                $parameters = $storageCommand->getParameters();
+                if (empty($parameters)) {
+                    $parameters = new ArrayInput([]);
                 }
-
-                $command = DependencyInjection::instantiate($storageCommand->getCommand());
-                $command->run($storageCommand->getParameters());
+                $command->run($parameters, new NullOutput());
 
                 try {
                     $end = (new DateTime('now', new DateTimeZone('UTC')));
@@ -120,7 +125,11 @@ class Run extends Command
                 $message .= $throwable;
 
                 $this->logger->critical($message);
-                $output->writeln('<error>' . $message . '</error>');
+                if ($this->continueQueueAfterCommandException) {
+                    $output->writeln('<error>' . $message . '</error>');
+                } else {
+                    throw $throwable;
+                }
             }
 
             $this->storage->delete($storageCommand);
