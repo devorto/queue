@@ -96,7 +96,7 @@ class Run extends Command
                 $command = $this->getApplication()->find($storageCommand->getCommand());
                 $parameters = $storageCommand->getParameters();
                 if (empty($parameters)) {
-                    $parameters = new ArrayInput([]);
+                    $parameters = new ArrayInput(['command' => $storageCommand->getCommand()]);
                 }
                 $command->run($parameters, new NullOutput());
 
