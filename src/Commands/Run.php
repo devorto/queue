@@ -71,8 +71,9 @@ class Run extends Command
      * @param OutputInterface $output
      *
      * @throws Throwable
+     * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $storageCommands = $this->storage->getStorageCommands();
 
@@ -134,5 +135,7 @@ class Run extends Command
 
             $this->storage->delete($storageCommand);
         }
+        
+        return 0;
     }
 }
