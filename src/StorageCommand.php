@@ -20,27 +20,27 @@ class StorageCommand
      * @var string|null Index/key or whatever you want to use to identify this specific command in the system.
      * Will only be set for existing commands create from dataset, see FromArray method.
      */
-    protected $id;
+    protected ?string $id = null;
 
     /**
      * @var string
      */
-    protected $command;
+    protected string $command;
 
     /**
      * @var ArrayInput|null
      */
-    protected $parameters;
+    protected ?ArrayInput $parameters = null;
 
     /**
      * @var DateTime
      */
-    protected $created;
+    protected DateTime $created;
 
     /**
      * @var DateTime
      */
-    protected $runAfter;
+    protected DateTime $runAfter;
 
     /**
      * StorageCommand constructor.

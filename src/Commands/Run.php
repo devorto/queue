@@ -25,17 +25,17 @@ class Run extends Command
     /**
      * @var Storage
      */
-    protected $storage;
+    protected Storage $storage;
 
     /**
      * @var LoggerInterface
      */
-    protected $logger;
+    protected LoggerInterface $logger;
 
     /**
      * @var bool
      */
-    protected $continueQueueAfterCommandException;
+    protected bool $continueQueueAfterCommandException;
 
     /**
      * Run constructor.
@@ -59,7 +59,7 @@ class Run extends Command
     /**
      * Configures commands.
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('queue:run')
@@ -135,7 +135,7 @@ class Run extends Command
 
             $this->storage->delete($storageCommand);
         }
-        
-        return 0;
+
+        return static::SUCCESS;
     }
 }
